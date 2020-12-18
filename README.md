@@ -1,0 +1,2 @@
+# Authority-Management-System-2.0
+项目采用SpringBoot对SSM 写的Authority-Management-System企业权限管理系统进行了重构，并放弃了SpringSecurity而使用Shiro用于权限控制，使其代码更加简洁易懂，非常适合初学者学习，如果对你有所帮助请给个Star鼓励一下！
