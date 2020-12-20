@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!--命名空间对应dao层接口全路径-->
+<mapper namespace="com.ldf.demo.mapper.PermissionMapper">
+    <resultMap id="findAll" type="permission">
+        <id property="id" column="id"/>
+        <result property="permissionName" column="permissionName"/>
+        <result property="url" column="url"/>
+    </resultMap>
+    <select id="findAll" resultMap="findAll">
+        select * from permission;
+    </select>
+
+    <resultMap id="findById" type="permission">
+        <id property="id" column="pid"/>
+        <result property="permissionName" column="permissionName"/>
+        <result property="url" column="url"/>
+        <collection property="roles" ofType="role">
+            <id property="id" column="rid"/>
+            <result property="roleName" column="roleName"/>
+            <result property="roleDesc" column="roleDesc"/>
+        </collection>
+    </resultMap>
+    <select id="findById" resultMap="findById">
+         SELECT
+            p.`id` pid,p.`permissionName`,p.`url`,r.`id` rid,r.`roleName`,r.`roleDesc`
+         FROM
+             permission p,
+             role_permission rp,
+             role r
+         WHERE
+            p.`id` = #{id}
+         AND
+            p.`id` = rp.`permissionId`
+         AND
+            r.`id` = rp.`roleId`
+    </select>
+<!--查询未添加的角色-->
+    <resultMap id="findByIdAndNotRole_Permission" type="role">
+        <id property="id" column="rid"/>
+        <result property="roleName" column="roleName"/>
+        <result property="roleDesc" column="roleDesc"/>
+        <collection property="permissions" ofType="permission">
+            <id property="id" column="pid"/>
+        </collection>
+    </resultMap>
+    <select id="findByIdAndNotRole_Permission" resultMap="findByIdAndNotRole_Permission">
+        SELECT
+            r.`id` rid,r.`roleName`,r.`roleDesc`,p.`id` pid
+        FROM
+            role r,
+            permission p
+        WHERE
+            p.`id` = #{id}
+        AND
+            r.`id`
+        NOT IN(
+        SELECT
+            r.`id`
+        FROM
+            permission p,
+            role_permission rp,
+            role r
+        WHERE
+            p.`id` = rp.`permissionId`
+        AND
+            r.`id` = rp.`roleId`
+        AND
+            p.`id` =#{id})
+    </select>
+<!--添加资源权限与角色的关联-->
+    <insert id="addRoleByPermissionId">
+        insert into role_permission values (#{permissionId},#{roleId});
+    </insert>
+<!--添加资源权限-->
+    <insert id="save" parameterType="permission">
+        insert into permission values (null,#{permissionName},#{url});
+    </insert>
+    
+<!--删除资源权限和关联表-->
+    <delete id="deletePermissionByIdAndRole_Permission">
+        delete from role_permission where permissionId=#{permissionId}
+    </delete>
+<!--删除资源权限-->
+    <delete id="deletePermissionById">
+        delete from permission where id=#{permissionId}
+    </delete>
+<!--根据角色id和资源权限id删除关联表-->
+    <delete id="deleteRoleById">
+        delete from role_permission where permissionId=#{permissionId} and roleId=#{roleId}
+    </delete>
+</mapper>

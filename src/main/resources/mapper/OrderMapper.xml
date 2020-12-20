@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!--命名空间对应dao层接口全路径-->
+<mapper namespace="com.ldf.demo.mapper.OrderMapper">
+    <resultMap id="findAll" type="orders">
+        <id property="id" column="id"/>
+        <result property="orderNum" column="orderNum"/>
+        <result property="orderTime" column="orderTime"/>
+        <result property="orderStatus" column="orderStatus"/>
+        <association property="product" javaType="product">
+            <id property="id" column="productId"/>
+            <result property="productName" column="productName"/>
+            <result property="productPrice" column="productPrice"/>
+        </association>
+    </resultMap>
+
+    <select id="findAll" resultMap="findAll">
+        SELECT
+        o.`id`,o.`orderNum`,o.`orderTime`,o.`orderStatus`,p.`productName`,p.`productPrice`
+        FROM
+        orders o,
+        product p
+        <where>
+            <if test="1==1">
+                o.`productId`=p.`id`
+            </if>
+            <if test="fuzzyName!=null">
+                and orderNum like concat('%',#{fuzzyName},'%')
+            </if>
+        </where>
+    </select>
+    <!--多表查询property属性与column字段同名也要写-->
+        <resultMap id="findById" type="orders">
+            <id property="id" column="oid"/>
+            <result property="orderNum" column="orderNum"/>
+            <result property="orderTime" column="orderTime"/>
+            <result property="peopleCount" column="peopleCount"/>
+            <result property="orderDesc" column="orderDesc"/>
+            <result property="payType" column="payType"/>
+            <result property="orderStatus" column="orderStatus"/>
+            <association property="product" javaType="product">
+                <id property="id" column="pid"/>
+                <result property="productNum" column="productNum"/>
+                <result property="productName" column="productName"/>
+                <result property="cityName" column="cityName"/>
+                <result property="departureTime" column="DepartureTime"/>
+                <result property="productPrice" column="productPrice"/>
+                <result property="productDesc" column="productDesc"/>
+                <result property="productStatus" column="productStatus"/>
+            </association>
+            <association property="member" javaType="member">
+                <id property="id" column="mid"/>
+                <result property="name" column="name"/>
+                <result property="nickname" column="nickName"/>
+                <result property="phoneNum" column="phoneNum"/>
+                <result property="email" column="email"/>
+            </association>
+            <collection property="travellers" ofType="traveller">
+                <id property="id" column="tid"/><!--多对多跟一对多一样，不考虑中间表字段，这里游客表实体类id对应游客表列名，取别名了就用别名-->
+               <result property="name" column="name"/>
+              <result property="sex" column="sex"/>
+                 <result property="phoneNum" column="phoneNum"/>
+                 <result property="credentialsType" column="credentialsType"/>
+                 <result property="credentialsNum" column="credentialsNum"/>
+                 <result property="travellerType" column="travellerType"/>
+            </collection>
+        </resultMap>
+
+        <select id="findById" resultMap="findById">
+            SELECT
+                o.id oid,o.orderNum,o.orderTime,o.peopleCount,o.orderDesc,o.payType,o.orderStatus,
+                p.id pid,p.productNum,p.productName,p.cityName,p.DepartureTime,p.productPrice,p.productDesc,p.productStatus,
+                m.id mid,m.name,m.nickName,m.phoneNum,m.email,
+                t.id tid,t.name,t.sex,t.phoneNum,t.credentialsType,t.credentialsNum,t.travellerType
+            FROM
+                orders o,
+                product p,
+                order_traveller ot,
+                member m,
+                traveller t
+            WHERE
+                o.id=#{id}
+            and
+                o.`productId`=p.`id`
+            AND
+                o.`memberId`=m.`id`
+            AND
+                o.`id`=ot.`orderId`
+            AND
+                ot.`travellerId`=t.`id`
+        </select>
+
+
+    <delete id="deleteByIdStr">
+        delete from orders where id=#{id}
+    </delete>
+</mapper>

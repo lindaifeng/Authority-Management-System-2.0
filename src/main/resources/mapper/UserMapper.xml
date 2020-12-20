@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!--命名空间对应dao层接口全路径-->
+<mapper namespace="com.ldf.demo.mapper.UserInfoMapper">
+
+    <resultMap id="findAll" type="userinfo">
+        <id property="id" column="id"/>
+        <result property="email" column="email"/>
+        <result property="username" column="username"/>
+        <result property="phoneNum" column="phoneNum"/>
+        <result property="status" column="status"/>
+    </resultMap>
+    <select id="findAll" resultMap="findAll">
+        select id,email,username,phoneNum,status from users
+        <where>
+            <if test="fuzzyName!=null">
+                username like concat('%',#{fuzzyName},'%')
+            </if>
+        </where>
+    </select>
+
+    <resultMap id="findById" type="userinfo">
+        <id property="id" column="uid"/>
+        <result property="username" column="username"/>
+        <collection property="roles" ofType="role">
+            <id property="id" column="rid"/>
+            <result property="roleName" column="roleName"/>
+            <result property="roleDesc" column="roleDesc"/>
+            <collection property="permissions" ofType="permission">
+                <id property="id" column="pid"/>
+                <result property="permissionName" column="permissionName"/>
+                <result property="url" column="url"/>
+            </collection>
+        </collection>
+    </resultMap>
+    <select id="findById" resultMap="findById">
+        SELECT
+            u.`id` uid,u.`username`,r.`id` rid,r.`roleName`,r.`roleDesc`,p.`id` pid,p.`permissionName`,p.`url`
+        FROM
+            users u,
+            users_role ur,
+            role r,
+            role_permission rp,
+            permission p
+        WHERE
+            u.`id`=ur.`userId`
+        AND
+            r.`id`=ur.`roleId`
+        AND
+            r.`id`=rp.`roleId`
+        AND
+            p.`id`=rp.`permissionId`
+        AND
+            u.`id` = #{id}
+    </select>
+
+    <resultMap id="findByIdNotRole" type="role">
+        <id property="id" column="id"/>
+        <result property="roleName" column="roleName"/>
+        <result property="roleDesc" column="roleDesc"/>
+    </resultMap>
+    <select id="findByIdNotRole" resultMap="findByIdNotRole">
+        SELECT
+            r.`id`,r.`roleName`,r.`roleDesc`
+        FROM
+            role r
+        WHERE
+            id
+        NOT IN
+        (SELECT
+            r.`id`
+        FROM
+            users u,
+            users_role ur,
+            role r
+        WHERE
+            u.`id` = #{id}
+        AND
+            u.`id` = ur.`userId`
+        AND
+            r.`id` = ur.`roleId`)
+    </select>
+
+    <resultMap id="findByUsername" type="userinfo">
+        <id property="id" column="uid"/>
+        <result property="username" column="username"/>
+        <result property="password" column="password"/>
+        <result property="status" column="status"/>
+        <collection property="roles" ofType="role">
+        <result property="id" column="rid"/>
+        <result property="roleName" column="roleName"/>
+        </collection>
+    </resultMap>
+<!--根据用户名查询用户信息-->
+    <select id="findByUsername" resultMap="findByUsername">
+        SELECT
+            u.`id` uid,u.`username`,u.`password`,u.`status`,r.`id` rid,r.`roleName`
+        FROM
+            users u,
+            users_role ur,
+            role r
+        WHERE
+            u.`id` = ur.`userId`
+        AND
+            r.`id` = ur.`roleId`
+        AND
+            u.`username`=#{username}
+    </select>
+
+
+    <insert id="relatedRole">
+        insert into users_role values (#{userId},#{roleId});
+    </insert>
+
+    <delete id="deleteByIdRoleAndUser">
+        delete from users_role where roleId=#{roleId} and userId=#{userId}
+    </delete>
+</mapper>
