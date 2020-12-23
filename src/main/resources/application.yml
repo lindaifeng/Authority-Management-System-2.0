@@ -1,0 +1,28 @@
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: root
+    password: 123456
+    url: jdbc:mysql://localhost:3306/ssm?useUnicode=true&characterEncoding=utf-8&serverTimezone=GMT%2B8
+    type: com.alibaba.druid.pool.DruidDataSource
+  mvc:
+    view:
+      #页面默认前缀目录
+      prefix: /WEB-INF/jsp/
+      #页面默认后缀目录
+      suffix: .jsp
+
+
+
+mybatis:
+  type-aliases-package: com.ldf.demo.pojo
+#  指定xml映射文件路径
+  mapper-locations: classpath*:mapper\*.xml
+#  mapper-locations: classpath*:com\ldf\demo\mapper\*.xml
+#  org.apache.ibatis.logging.stdout.StdOutImpl：这个是可以打印sql、参数、查询结果的
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+
+server:
+  port: 80
+#debug: true

@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!--命名空间对应dao层接口全路径-->
+<mapper namespace="com.ldf.demo.mapper.SysLogMapper">
+
+    <resultMap id="findAll" type="syslog">
+        <id property="id" column="id"/>
+        <result property="visitTime" column="visitTime"/>
+        <result property="username" column="username"/>
+        <result property="ip" column="ip"/>
+        <result property="url" column="url"/>
+        <result property="executionTime" column="executionTime"/>
+        <result property="method" column="method"/>
+    </resultMap>
+    <select id="findAll" resultMap="findAll">
+        select * from syslog
+        <where>
+            <if test="fuzzyName!=null">
+                username like concat('%',#{fuzzyName},'%')
+            </if>
+        </where>
+    </select>
+
+    <insert id="addSysLog" parameterType="syslog">
+        insert into syslog values (null,#{visitTime},#{username},#{ip},#{url},#{executionTime},#{method});
+    </insert>
+
+    <delete id="deleteSysLog">
+        delete from syslog
+    </delete>
+</mapper>
